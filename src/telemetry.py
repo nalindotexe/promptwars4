@@ -4,14 +4,14 @@ from typing import Any, Dict, List
 
 class Zone:
     def __init__(self, name: str, current_capacity: int, navigable_area: float) -> None:
-        self.name = name
-        self.current_capacity = current_capacity
-        self.navigable_area = navigable_area
+        self.name: str = name
+        self.current_capacity: int = current_capacity
+        self.navigable_area: float = navigable_area
 
     def calculate_density(self) -> float:
         if self.navigable_area <= 0.0:
             return 0.0
-        return self.current_capacity / self.navigable_area
+        return float(self.current_capacity) / self.navigable_area
 
     def to_dict(self) -> Dict[str, Any]:
         return {

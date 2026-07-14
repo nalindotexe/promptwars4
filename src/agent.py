@@ -2,11 +2,11 @@ import json
 import logging
 from typing import Any, Dict, List
 
-from google import genai  # type: ignore
-from google.genai import types  # type: ignore
+from google import genai
+from google.genai import types
 from pydantic import BaseModel, Field
 
-
+# Ensure type safety for the structured output
 class Announcement(BaseModel):
     english: str
     french: str
@@ -33,7 +33,7 @@ class CrisisCoordinator:
         zones: List[Dict[str, Any]] = telemetry_data.get("zones", [])
         
         for zone in zones:
-            density: float = zone.get("density", 0.0)
+            density: float = float(zone.get("density", 0.0))
             if density > 0.85:
                 overcrowded_zones.append(zone)
 
@@ -61,7 +61,7 @@ class CrisisCoordinator:
                 )
             )
             
-            if not response.text:
+            if response.text is None:
                 raise ValueError("Empty response from Gemini")
                  
             plan_dict: Dict[str, Any] = json.loads(response.text)
@@ -73,7 +73,7 @@ class CrisisCoordinator:
 
     def _get_fallback_plan(self, overcrowded_zones: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Fail-closed fallback heuristic."""
-        zone_names = [str(z.get("name", "Unknown")) for z in overcrowded_zones]
+        zone_names: List[str] = [str(z.get("name", "Unknown")) for z in overcrowded_zones]
         return {
             "status": "fallback_action_required",
             "plan": {

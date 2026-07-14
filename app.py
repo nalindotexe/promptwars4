@@ -1,7 +1,7 @@
 import html
 from typing import Any, Dict
 
-import streamlit as st  # type: ignore
+import streamlit as st
 
 from src.agent import CrisisCoordinator
 from src.telemetry import StadiumState
@@ -9,34 +9,26 @@ from src.telemetry import StadiumState
 st.set_page_config(page_title="StadiumSync AI", layout="wide")
 
 
-@st.cache_data  # type: ignore
+@st.cache_data
 def fetch_telemetry() -> Dict[str, Any]:
     state = StadiumState()
     return state.get_simulated_state()
 
 
-@st.cache_data  # type: ignore
+@st.cache_data
 def evaluate_crisis_by_event(event_name: str, location: str) -> Dict[str, Any]:
-    """Uses primitive types as cache keys to eliminate dictionary serialization lag completely."""
+    """Uses primitive types as cache keys to eliminate dictionary serialization lag."""
     state = StadiumState()
     coordinator = CrisisCoordinator()
     return coordinator.evaluate_state(state.get_simulated_state())
 
 
 def render_kpi_card(zone: Dict[str, Any]) -> None:
-    name = html.escape(str(zone.get("name", "")))
-    capacity = zone.get("current_capacity", 0)
-    density = zone.get("density", 0.0)
-
-    # Strictly utilizing implicit string concatenation
-    card_html = (
-        "<div style='background-color: #0b0c10; padding: 1.5rem; border-radius: 8px; border: 1px solid #1f2937;'>"
-        f"<h3 style='color: #94a3b8; font-size: 1.25rem; margin-top: 0; font-weight: 600;'>{name}</h3>"
-        f"<p style='color: #94a3b8; font-size: 1rem; margin-bottom: 0.5rem;'>Capacity: {capacity}</p>"
-        f"<p style='color: #94a3b8; font-size: 1rem; margin-bottom: 0;'>Density: {density:.2f}</p>"
-        "</div>"
-    )
-    st.markdown(card_html, unsafe_allow_html=True)
+    # Uses native container with border for accessible, secure layout
+    with st.container(border=True):
+        st.subheader(str(zone.get("name", "")))
+        st.write(f"Capacity: {zone.get('current_capacity', 0)}")
+        st.write(f"Density: {zone.get('density', 0.0):.2f}")
 
 
 def main() -> None:
@@ -63,13 +55,7 @@ def main() -> None:
     status = crisis_state.get("status", "unknown")
 
     if status == "normal":
-        msg = html.escape(str(crisis_state.get("message", "")))
-        normal_html = (
-            "<div style='background-color: #0b0c10; padding: 1rem; border-radius: 8px; border: 1px solid #059669;'>"
-            f"<p style='color: #94a3b8; font-size: 1rem; margin: 0;'>{msg}</p>"
-            "</div>"
-        )
-        st.markdown(normal_html, unsafe_allow_html=True)
+        st.info(str(crisis_state.get("message", "")))
     else:
         plan = crisis_state.get("plan", {})
         sev = html.escape(str(plan.get("severity_level", "")))
@@ -79,22 +65,16 @@ def main() -> None:
         fra = html.escape(str(announcements.get("french", "")))
         spa = html.escape(str(announcements.get("spanish", "")))
 
-        # Upgraded WCAG AAA contrast ratio borders and text
-        alert_html = (
-            "<div style='background-color: #0b0c10; padding: 1.5rem; border-radius: 8px; border: 2px solid #dc2626;'>"
-            f"<h3 style='color: #f8fafc; margin-top: 0; font-weight: 700;'>🚨 CRISIS ALERT: {sev}</h3>"
-            "<p style='color: #94a3b8; font-weight: bold;'>Staff Action:</p>"
-            f"<p style='color: #94a3b8;'>{staff}</p>"
-            "<hr style='border-color: #1f2937;' />"
-            "<p style='color: #94a3b8; font-weight: bold;'>Public Announcements:</p>"
-            "<ul style='color: #94a3b8;'>"
-            f"<li><strong>EN:</strong> {eng}</li>"
-            f"<li><strong>FR:</strong> {fra}</li>"
-            f"<li><strong>ES:</strong> {spa}</li>"
-            "</ul>"
-            "</div>"
-        )
-        st.markdown(alert_html, unsafe_allow_html=True)
+        # Native error alert triggers WCAG 2.1 AA alert role
+        with st.container(border=True):
+            st.error(f"🚨 CRISIS ALERT: {sev}")
+            st.markdown("**Staff Action:**")
+            st.write(staff)
+            st.divider()
+            st.markdown("**Public Announcements:**")
+            st.write(f"**EN:** {eng}")
+            st.write(f"**FR:** {fra}")
+            st.write(f"**ES:** {spa}")
 
 
 if __name__ == "__main__":
