@@ -9,8 +9,6 @@
 
 ## 🏛️ The Architecture of Safety
 
-[Image: StadiumSync AI data flow architecture showing deterministic filtering followed by generative AI processing]
-
 StadiumSync AI is built on the **Rules-Before-LLM** paradigm. Unlike standard LLM-reliant apps that risk hallucination, our system mandates that physical safety thresholds are computed via deterministic Python logic *before* any AI intervention occurs.
 
 ### 1. Architectural Highlights
